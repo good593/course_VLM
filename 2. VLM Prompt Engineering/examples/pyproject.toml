@@ -1,0 +1,16 @@
+[project]
+name = "vlm-prompt-engineering"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "ipykernel>=7.3.0",
+    "jupyterlab>=4.6.2",
+    "koreanize-matplotlib>=0.1.1",
+    "matplotlib>=3.11.1",
+    "ollama>=0.6.2",
+    "pillow>=12.3.0",
+    "pymupdf>=1.28.0",
+    "pytesseract>=0.3.13",
+]

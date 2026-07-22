@@ -1,9 +1,5 @@
 # Qwen3-VL
-- https://docs.rbln.ai/latest/ko/software/model_serving/vllm_support/tutorial/vllm_qwen3-vl-2b.html
-- https://unsloth.ai/docs/models/tutorials/qwen3-how-to-run-and-fine-tune/qwen3-vl-how-to-run-and-fine-tune
-- https://medium.com/@aminfadaeinejad.edu/fine-tuning-qwen3-vl-a-practical-guide-for-vision-language-model-adaptation-d66d3f61e888
-- https://www.datacamp.com/tutorial/fine-tuning-qwen3-vl-8b
-- https://github.com/QwenLM/Qwen3-VL/tree/main
+- https://ollama.com/library/qwen3-vl
 
 ---
 # VLM Prompt Engineering
