@@ -58,7 +58,8 @@ EXPOSE 8888
 
 # No auth token/password (per requirements) — only safe because this runs on a
 # private RunPod pod, not exposed directly to the public internet.
-# allow_origin='*' avoids CORS/Host-check 403s behind RunPod's reverse proxy.
+# allow_origin='*' + allow_remote_access avoid CORS/Host-check 403s behind
+# RunPod's reverse proxy.
 CMD ["jupyter", "lab", \
      "--ip=0.0.0.0", \
      "--port=8888", \
@@ -66,4 +67,5 @@ CMD ["jupyter", "lab", \
      "--allow-root", \
      "--ServerApp.token=", \
      "--ServerApp.password=", \
-     "--ServerApp.allow_origin=*"]
+     "--ServerApp.allow_origin=*", \
+     "--ServerApp.allow_remote_access=True"]
