@@ -13,8 +13,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-# Install uv (static binary) from its official distroless image
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+# Install uv (static binary) from its official distroless image.
+# Pinned (not :latest) so every student's image is built with the same uv.
+COPY --from=ghcr.io/astral-sh/uv:0.11.31 /uv /usr/local/bin/uv
 
 WORKDIR /workspace
 
@@ -22,6 +23,10 @@ WORKDIR /workspace
 # so the in-notebook install cells become no-ops. Versions mirror what each
 # notebook pins; "pip" itself is included so those redundant install cells
 # don't fail on a missing pip module.
+#
+# Every version below is pinned (none left floating) so every student builds
+# the exact same environment instead of whatever happens to be latest on the
+# day they build the image.
 #
 #  1. OCR - CRNN.ipynb      -> tqdm, matplotlib, seaborn
 #  2. Image2Text.ipynb      -> transformers, torch, torchvision, typing_extensions,
@@ -31,23 +36,33 @@ WORKDIR /workspace
 #                               own BlipProcessor/BlipForConditionalGeneration, and the
 #                               BLIP repo has no setup.py/pyproject.toml to pip-install
 #                               anyway, so it's intentionally not pre-installed here)
-#  3. Text2Image.ipynb      -> imageio, h5py, torch, torchvision, kagglehub
+#  3. Text2Image.ipynb      -> imageio, h5py, torch, torchvision, kagglehub,
+#                               diffusers, accelerate, xformers, huggingface_hub
+#                               (its Stable Diffusion section previously left
+#                               huggingface_hub unpinned in-notebook; pinned here
+#                               to the newest 0.x release compatible with
+#                               transformers/diffusers/accelerate's own
+#                               huggingface-hub>=0.34.0,<1.0-style constraints)
 RUN uv pip install --system --no-cache \
-    pip \
-    jupyterlab \
-    tqdm \
-    matplotlib \
-    seaborn \
-    pillow \
-    requests \
-    koreanize-matplotlib \
+    pip==26.1.2 \
+    jupyterlab==4.6.1 \
+    tqdm==4.69.0 \
+    matplotlib==3.11.1 \
+    seaborn==0.13.2 \
+    pillow==12.3.0 \
+    requests==2.34.2 \
+    koreanize-matplotlib==0.1.1 \
     typing_extensions==4.15.0 \
     torch==2.8.0 \
     torchvision==0.23.0 \
     transformers==4.56.2 \
     kagglehub==1.0.1 \
     imageio==2.37.0 \
-    h5py==3.14.0
+    h5py==3.14.0 \
+    huggingface_hub==0.34.6 \
+    diffusers==0.35.1 \
+    accelerate==1.10.1 \
+    xformers==0.0.32.post2
 
 # Course notebooks, minus data/ (see .dockerignore) — that dataset is
 # fetched at runtime instead (see "1. OCR - CRNN.ipynb", data-download cell).
