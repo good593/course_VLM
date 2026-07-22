@@ -1,0 +1,7 @@
+Dockerfile
+.dockerignore
+**/.DS_Store
+
+# Local CRNN dataset — downloaded at runtime by "1. OCR - CRNN.ipynb" instead
+# of being baked into the image (see Dockerfile comment).
+data/
