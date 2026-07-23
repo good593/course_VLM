@@ -110,3 +110,10 @@ docker run -d \
 • 이미지 캡셔닝 셀에서 `pip install git+...BLIP.git`은 원래 죽은
   코드(실제로는 `transformers`의 BLIP 클래스만 사용) → 무시해도 됨
 • `data/` 폴더가 비어 있어도 정상 — CRNN 노트북 실행 시 자동 다운로드
+• **JupyterLab에 노트북이 하나도 안 보임** → Pod에 Volume Disk(네트워크
+  볼륨)를 붙이고 Mount Path를 `/workspace`로 잡은 경우, 처음엔 비어있는
+  볼륨이 이미지에 구워둔 노트북들을 가려서 이렇게 보임. 이미지에
+  `entrypoint.sh`가 포함되어 있어 컨테이너 시작 시 `/opt/course-materials`
+  에서 `/workspace`로 노트북을 자동 복원하므로, 최신 이미지를 다시
+  빌드/푸시하고 Pod를 재배포하면 해결됨 (기존 세션에서 저장한 파일은
+  덮어쓰지 않음)

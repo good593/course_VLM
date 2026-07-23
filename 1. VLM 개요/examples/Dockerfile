@@ -29,6 +29,9 @@ WORKDIR /workspace
 # day they build the image.
 #
 #  1. OCR - CRNN.ipynb      -> tqdm, matplotlib, seaborn
+#                               (tqdm.notebook needs ipywidgets to render its
+#                               progress bar in JupyterLab, or it raises
+#                               "ImportError: IProgress not found")
 #  2. Image2Text.ipynb      -> transformers, torch, torchvision, typing_extensions,
 #                               pillow, requests, koreanize-matplotlib
 #                               (its `pip install git+...salesforce/BLIP.git` cell is
@@ -47,6 +50,7 @@ RUN uv pip install --system --no-cache \
     pip==26.1.2 \
     jupyterlab==4.6.1 \
     tqdm==4.69.0 \
+    ipywidgets==8.1.8 \
     matplotlib==3.11.1 \
     seaborn==0.13.2 \
     pillow==12.3.0 \
@@ -67,9 +71,23 @@ RUN uv pip install --system --no-cache \
 # Course notebooks, minus data/ (see .dockerignore) — that dataset is
 # fetched at runtime instead (see "1. OCR - CRNN.ipynb", data-download cell).
 # Build context is this "examples" folder itself.
-COPY . /workspace/
+#
+# Staged outside /workspace on purpose: RunPod Network Volumes are commonly
+# mounted at /workspace, which would otherwise hide these files behind an
+# empty volume. entrypoint.sh restores them into /workspace at container
+# startup (after the volume is already mounted), without clobbering any
+# student edits a previous session already saved there.
+#
+# entrypoint.sh rides along in this COPY (it's part of the build context
+# too), then gets moved out of course-materials so it isn't itself among the
+# files restored into /workspace at runtime.
+COPY . /opt/course-materials/
+RUN mv /opt/course-materials/entrypoint.sh /opt/entrypoint.sh && \
+    chmod +x /opt/entrypoint.sh
 
 EXPOSE 8888
+
+ENTRYPOINT ["/opt/entrypoint.sh"]
 
 # No auth token/password (per requirements) — only safe because this runs on a
 # private RunPod pod, not exposed directly to the public internet.
