@@ -9,17 +9,10 @@ style: |
 marp: true
 paginate: true
 ---
-
-# VLM Prompt Engineering
-- 실습 모델: **Qwen3-VL** (Ollama)
-  - https://ollama.com/library/qwen3-vl
-- 이번 강의에서 다룰 것
-  - 프롬프트로 VLM의 출력을 원하는 형태로 유도하는 법
-  - 이미지 정보 추출 · OCR 비교 · Document AI · 차트 분석 · UI 이해
+# [VLM Prompt Engineering](https://developer.nvidia.com/blog/vision-language-model-prompt-engineering-guide-for-image-and-video-understanding/)
 
 ---
-
-## Qwen3-VL이란?
+## [Qwen3-VL이란?](https://ollama.com/library/qwen3-vl)
 - Alibaba Qwen 팀이 공개한 오픈소스 Vision-Language 모델
 - Ollama로 로컬(온디바이스) 실행 가능 → API 비용 없이 실습
 - 2B ~ 235B까지 다양한 크기, Instruct / Thinking 두 변종 제공
@@ -114,13 +107,6 @@ ollama run qwen3-vl:4b
   "price": "number | null"
 }
 ```
-
----
-
-## Structured Output 실습 팁
-- Ollama의 `format="json"` 옵션 + 프롬프트 내 스키마 명시를 함께 사용
-- 응답을 받은 뒤 `json.loads()`로 검증 → 실패 시 재요청(retry) 로직 추가
-- 스키마가 복잡할수록 **Few-shot 예시 1~2개**를 함께 제공하면 정확도 상승
 
 ---
 
@@ -231,7 +217,6 @@ ollama run qwen3-vl:4b
 ## OCR + VLM (이미지를 직접 이해)
 - VLM은 **이미지를 그대로 입력**받아 텍스트+레이아웃을 함께 이해
 - OCR 단계 없이 "이 영수증에서 총 금액이 얼마야?"를 바로 질의 가능
-- 표의 행/열 구조, 문서의 시각적 배치를 참고해 답변 가능
 
 | 구분 | OCR + LLM | VLM (직접) |
 |---|---|---|
@@ -388,13 +373,3 @@ ollama run qwen3-vl:4b
 개선이 필요하다면 구체적인 이유와 함께 제안해줘.
 ```
 
----
-
-## 정리
-- VLM 프롬프트 엔지니어링의 핵심은 **"무엇을, 어떤 형식으로" 답할지 명확히 지정**하는 것
-- 태스크별 프롬프트 설계 요령
-  - Caption → 범위/관점/용도 지정
-  - OCR → "전사" 지시 + 구조 유지 요청
-  - Reasoning → 근거 요구 + "모르면 모른다"
-  - Structured Output → 스키마 명시 + Few-shot + 사후 검증
-- 다음 시간: 실습 노트북으로 Qwen3-VL(Ollama) 직접 호출해보기 (`examples/`)
