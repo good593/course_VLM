@@ -1,8 +1,9 @@
 .DS_Store
 
 .env
-.venv 
-chroma_db 
+.venv
+chroma_db
 image_db
 model_cache
+report_pages
 

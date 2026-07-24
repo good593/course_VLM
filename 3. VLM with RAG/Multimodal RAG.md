@@ -9,58 +9,7 @@ style: |
 marp: true
 paginate: true
 ---
-# [VLM with RAG](https://pyimagesearch.com/2026/07/12/building-multimodal-ai-applications-with-gemma-4-and-transformers/)
-
----
-## [Gemma 4 VL이란?](https://medium.com/online-inference/training-and-deploying-vlm-models-with-gemma-4-c5dc1179833c)
-- Google이 공개한 멀티모달 모델 — 이미지·비디오·오디오를 **네이티브로 처리**
-- E2B / E4B 변형 제공 — 스마트폰부터 GPU 서버까지 배포 가능한 경량 크기
-- `transformers` 라이브러리로 바로 로드해 실습 가능 (API 비용 없이)
-
-```python
-from transformers import AutoModelForMultimodalLM, AutoProcessor
-
-model_id = "google/gemma-4-E2B-it"
-model = AutoModelForMultimodalLM.from_pretrained(model_id, device_map="auto")
-processor = AutoProcessor.from_pretrained(model_id)
-```
-
-> 이 강의의 예제 코드는 `gemma-4-E2B-it` 기준으로 작성 (로컬 GPU 없어도 실습 가능한 크기)
-
----
-## Gemma 4 VL 아키텍처
-- **Vision Encoder**: 이미지를 밀집 임베딩(dense embedding)으로 변환
-- **Projector(멀티모달 커넥터)**: 비전 임베딩을 LLM이 이해하는 토큰 공간으로 매핑
-- **LLM**: 텍스트 토큰 + 시각 토큰을 함께 받아 응답 생성
-
-```
-[이미지] ──▶ Vision Encoder ──▶ Projector ──▶ (시각 토큰)
-                                                   │
-[텍스트] ──▶ Tokenizer ───────────────────────▶ (텍스트 토큰)
-                                                   │
-                                                   ▼
-                                              LLM (Decoder)
-                                                   │
-                                                   ▼
-                                              텍스트 응답
-```
-
-> Vision Encoder가 만드는 "밀집 임베딩"이 곧 RAG에서 검색에 쓰는 이미지 벡터의 원천
-
----
-## Qwen3-VL vs Gemma 4 VL
-- 공통점: 둘 다 **Vision Encoder + Projector + LLM** 구조의 VLM
-- 차이점: Qwen3-VL은 로컬 실습 편의성(Ollama)에, Gemma 4 VL은 임베딩 추출 및 `transformers` 생태계 연동(Vector DB 연계)에 강점
-- 실무에서는 두 계열 모두 후보로 두고, **PoC 단계에서 벤치마크(응답 정확도·지연 시간·비용) 비교 후 선택**
-
----
-| 구분 | Qwen3-VL (지난 시간) | Gemma 4 VL (이번 시간) |
-|---|---|---|
-| 개발사 | Alibaba Qwen 팀 | Google |
-| 지원 모달리티 | 이미지, 텍스트 | 이미지, 비디오, 오디오, 텍스트 |
-| 실행 방식 | Ollama (로컬 온디바이스) | `transformers` (`AutoModelForMultimodalLM`) |
-| 모델 크기 | 2B ~ 235B, Instruct/Thinking 변종 | E2B / E4B, 모바일~GPU 서버 배포 |
-| 이번 강의에서의 역할 | 프롬프트 엔지니어링 실습 | RAG 파이프라인의 임베딩·QA 실습 |
+# Multimodal RAG
 
 ---
 # [1. 기존 RAG vs Multimodal RAG](https://towardsdatascience.com/multimodal-rag-process-any-file-type-with-ai-e6921342c903/)
@@ -256,9 +205,6 @@ page_embeddings = [embed_image(page) for page in pages]
 
 ---
 # 4. 문서 질의응답
-- PDF QA
-- 이미지 QA
-- 표 질의응답
 
 ---
 ## PDF QA
