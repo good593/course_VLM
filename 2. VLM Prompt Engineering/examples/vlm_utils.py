@@ -27,8 +27,16 @@ def ask(image_path, prompt, model=DEFAULT_MODEL, json_format=False, think=False,
     message = response["message"]
     content = message["content"]
     if not content.strip() and message.get("thinking"):
-        content = "이미지가 복잡해 추론이 길어지면 num_predict/num_ctx 한도에 걸려 최종 답변(content)이 끝내 비어 있는 채로 끝났습니다. 아래 thinking 내용이라도 참고하세요.\n\n"
-        content += message["thinking"].removeprefix("<think>").strip()
+        thinking = message["thinking"].removeprefix("<think>").strip()
+        if json_format:
+            # qwen3-vl이 답변을 content가 아닌 thinking에 그대로 적어버릴 때가 있다.
+            # json_format 모드에서는 설명 문구를 덧붙이면 json.loads가 깨지므로 그대로 반환한다.
+            content = thinking
+        else:
+            content = (
+                "이미지가 복잡해 추론이 길어지면 num_predict/num_ctx 한도에 걸려 최종 답변(content)이 끝내 비어 있는 채로 끝났습니다. 아래 thinking 내용이라도 참고하세요.\n\n"
+                + thinking
+            )
     return content
 
 
