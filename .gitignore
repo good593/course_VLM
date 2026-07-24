@@ -7,3 +7,6 @@ image_db
 model_cache
 report_pages
 pages
+
+__pycache__
+
