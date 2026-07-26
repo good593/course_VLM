@@ -177,30 +177,60 @@ def _build_prompt_with_timestamps(prompt, frames):
     return f"{prompt}\n\n[프레임 순서와 시간] {timeline}"
 
 
-def ask_video(frames, prompt, model=VLM_MODEL, json_format=False, with_timestamps=True, **options):
-    """프레임 시퀀스 + 프롬프트를 VLM에 보내고 응답 텍스트를 반환한다."""
+_KOREAN_ONLY_INSTRUCTION = (
+    "\n\n(주의: 생각 과정을 출력하지 말고 최종 답변만 작성해. 답변은 반드시 한국어로만 써.)"
+)
+
+
+def _looks_like_leaked_reasoning(text):
+    """think=False에도 모델이 영어 사고 과정을 그대로 답변에 흘린 경우를 휴리스틱으로 감지한다."""
+    head = text.strip()[:20].lower()
+    if head.startswith(("okay", "got it", "let's", "let me", "i need", "so,", "alright", "first,")):
+        return True
+    hangul = sum(1 for ch in text if "가" <= ch <= "힣")
+    latin = sum(1 for ch in text if ch.isascii() and ch.isalpha())
+    return len(text) > 50 and latin > hangul * 2
+
+
+def ask_video(frames, prompt, model=VLM_MODEL, json_format=False, with_timestamps=True,
+              max_retries=4, **options):
+    """프레임 시퀀스 + 프롬프트를 VLM에 보내고 응답 텍스트를 반환한다.
+
+    간혹 사고 과정(영어)이 그대로 답변에 흘러나오는 경우가 있어, 그런 응답이면
+    최대 `max_retries`번 다시 요청한다.
+    """
     options.setdefault("num_predict", 2048)
     # 프레임이 여러 장이면 이미지 토큰만으로 기본 컨텍스트(4096)를 넘기기 쉬워
     # 넉넉하게 잡아둔다 (프레임 수가 아주 많으면 이마저도 늘려야 할 수 있음).
     options.setdefault("num_ctx", 16384)
-    full_prompt = _build_prompt_with_timestamps(prompt, frames) if with_timestamps else prompt
-    response = ollama.chat(
-        model=model,
-        messages=[{
-            "role": "user",
-            "content": full_prompt,
-            "images": _frames_to_png_bytes(frames),
-        }],
-        format="json" if json_format else None,
-        think=False,
-        options=options,
-    )
-    message = response["message"]
-    content = message["content"]
-    if not content.strip() and message.get("thinking"):
-        thinking = message["thinking"].removeprefix("<think>").strip()
-        content = thinking
-    return content
+    options.setdefault("temperature", 0.3)
+    base_prompt = _build_prompt_with_timestamps(prompt, frames) if with_timestamps else prompt
+    full_prompt = base_prompt + _KOREAN_ONLY_INSTRUCTION
+    images = _frames_to_png_bytes(frames)
+
+    content = ""
+    thinking_fallback = ""
+    for _ in range(max_retries + 1):
+        response = ollama.chat(
+            model=model,
+            messages=[{
+                "role": "user",
+                "content": full_prompt,
+                "images": images,
+            }],
+            format="json" if json_format else None,
+            think=False,
+            options=options,
+        )
+        message = response["message"]
+        content = message["content"]
+        # think=False로도 답변이 비어있고 생각 과정만 나올 때가 있다. 이 경우 재시도하되,
+        # 재시도가 모두 실패할 때를 대비해 생각 과정을 최후의 대안으로만 남겨둔다.
+        if not thinking_fallback and message.get("thinking"):
+            thinking_fallback = message["thinking"].removeprefix("<think>").strip()
+        if content.strip() and not _looks_like_leaked_reasoning(content):
+            return content
+    return content.strip() or thinking_fallback
 
 
 def ask_video_json(frames, prompt, model=VLM_MODEL, **options):
