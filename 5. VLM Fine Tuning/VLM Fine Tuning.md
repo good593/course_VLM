@@ -336,7 +336,7 @@ QLoRA 모델 정확도: OO%
 - Vision Encoder, LLM 본체는 그대로 두고 **어댑터 모듈만 추가로 학습** → LoRA보다도 구조가 단순한 경량화 전략
 - 새로운 이미지 도메인(예: 의료 영상, 특수 센서 이미지)에 기존 LLM의 언어 능력을 연결할 때 사용
 
-> 이 구조를 대중화한 대표 사례가 **LLaVA**: Vision Encoder(CLIP) + Projector(MLP) + LLM(Vicuna)를 연결하고, 먼저 Projector만 학습해 이미지-언어를 정렬한 뒤 LLM과 함께 instruction tuning — 실습에서 쓴 Qwen2-VL의 `visual.merger`도 이름만 다를 뿐 같은 역할
+> 이 구조를 대중화한 대표 사례가 **LLaVA**: Vision Encoder(CLIP) + Projector(MLP) + LLM(Vicuna)를 연결하고, 먼저 Projector만 학습해 이미지-언어를 정렬한 뒤 LLM과 함께 instruction tuning — 실습에서 쓴 Qwen3-VL의 `visual.merger`도 이름만 다를 뿐 같은 역할
 
 ---
 
