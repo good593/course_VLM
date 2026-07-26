@@ -193,11 +193,17 @@ def _looks_like_leaked_reasoning(text):
 
 
 def ask_video(frames, prompt, model=VLM_MODEL, json_format=False, with_timestamps=True,
-              max_retries=4, **options):
+              max_retries=6, **options):
     """프레임 시퀀스 + 프롬프트를 VLM에 보내고 응답 텍스트를 반환한다.
 
     간혹 사고 과정(영어)이 그대로 답변에 흘러나오는 경우가 있어, 그런 응답이면
     최대 `max_retries`번 다시 요청한다.
+
+    think=False를 줘도 이 모델은 내부적으로 계속 "생각"을 한 뒤 답을 내놓는다.
+    `num_predict`가 그 생각 분량보다 작으면 답변이 나오기 전에 잘려서, 닫히지
+    않은 생각 과정이 그대로 content로 새어 나온다 — 이 경우 재시도해도 같은
+    num_predict로는 매번 똑같이 실패하므로, 새어 나올 때마다 num_predict를
+    2배로 늘려가며 재시도한다.
     """
     options.setdefault("num_predict", 2048)
     # 프레임이 여러 장이면 이미지 토큰만으로 기본 컨텍스트(4096)를 넘기기 쉬워
@@ -230,6 +236,7 @@ def ask_video(frames, prompt, model=VLM_MODEL, json_format=False, with_timestamp
             thinking_fallback = message["thinking"].removeprefix("<think>").strip()
         if content.strip() and not _looks_like_leaked_reasoning(content):
             return content
+        options["num_predict"] = min(options["num_predict"] * 3, 8192)
     return content.strip() or thinking_fallback
 
 
