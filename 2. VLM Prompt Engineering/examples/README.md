@@ -57,19 +57,6 @@ uv sync
 
 ---
 
-# 실습 데이터 생성
-모든 샘플 이미지는 외부 다운로드 없이 코드로 생성됩니다
-(상품 이미지, 영수증, 계약서, 표, 차트, 대시보드, 웹페이지/Figma 목업).
-
-```bash
-uv run python data/generate_sample_data.py
-```
-
-• 실행하면 `data/*.png`, `data/contract.pdf`가 생성됨
-• 이미 생성된 파일이 있다면 덮어쓰기만 하고 새로 받을 필요 없음
-
----
-
 # JupyterLab 실행
 
 ```bash

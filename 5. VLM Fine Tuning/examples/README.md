@@ -76,8 +76,3 @@ ollama pull qwen3-vl:4b-instruct   # 노트북 4
 4. **4. VERA 판단 기준 학습.ipynb** — 가중치 학습 없이 자연어 판단 기준(guideline)을 스스로 개선하는 verbalized learning 실습 *(로컬)*
 5. **5. Vision Adapter 학습.ipynb** — Projector(어댑터)만 학습하는 경량 적응 *(RunPod GPU)*
 
-## 참고
-- 슬라이드: `../VLM Fine Tuning.md`
-- 공통 유틸리티: `vlm_finetune_utils.py`
-- Docker: `Dockerfile`
-- 환경 변수 예시: `.env.example`
