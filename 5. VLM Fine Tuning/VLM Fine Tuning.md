@@ -9,28 +9,10 @@ style: |
 marp: true
 paginate: true
 ---
-
 # VLM Fine Tuning
 
 ---
-
-## 지금까지 배운 것
-- **1강**: VLM 개요 — VLM이 무엇이고 어떻게 동작하는지
-- **2~4강**: 프롬프트 엔지니어링, Multimodal RAG, Video VLM — 전부 **추론 시점(inference-time)** 기법
-- 모델 가중치는 그대로 두고, **입력을 잘 설계**해서 원하는 답을 얻는 방법들이었음
-
-## 이번 강의
-- 프롬프트/RAG로도 안 되는 문제 → **모델 자체를 학습(fine-tuning)** 시켜야 함
-- 실습은 **RunPod GPU 인스턴스**를 대여해 학습을 진행 (로컬 Ollama 환경과는 별개)
-
-> 핵심 질문: **언제 fine-tuning이 필요하고, 무엇을(전체 vs 일부) 어떻게 학습시킬 것인가**
-
----
-
 # 1. Fine-tuning이 필요한 경우
-- 추론 시점 기법의 한계
-- Fine-tuning을 고려해야 하는 신호
-- 방법론 선택 기준
 
 ---
 
@@ -67,14 +49,9 @@ paginate: true
 | 평가 | 실제로 좋아졌는지 어떻게 확인할 것인가? | Held-out 평가셋, 전후 비교, 회귀 체크 |
 
 ---
-
 # 2. VLM 학습 데이터 구조
-- Instruction-following 데이터 포맷
-- 이미지-텍스트 페어 구성
-- 데이터 품질 체크리스트
 
 ---
-
 ## Instruction-following 데이터 포맷
 - LLM의 instruction tuning 데이터(`instruction` - `input` - `output`) 구조에 **이미지**가 추가된 형태
 - 대화형(conversation) 포맷이 표준 — 여러 턴의 Q&A를 하나의 샘플로 구성 가능
@@ -90,7 +67,6 @@ paginate: true
 ```
 
 ---
-
 ## 이미지-텍스트 페어 구성
 - **캡션형**: 이미지 1장 + 설명 1개 — 가장 단순, VQA/캡셔닝 기초 학습에 사용
 - **대화형**: 이미지 1장 + 여러 턴의 Q&A — 실제 서비스 시나리오에 가까움
@@ -103,7 +79,6 @@ paginate: true
 | 근거형 | 설명 가능성 확보 | 라벨러의 근거 작성 부담 큼 |
 
 ---
-
 ## 데이터 품질 체크리스트
 - **다양성**: 같은 유형의 이미지/질문만 반복되면 과적합(특정 패턴만 암기)
 - **일관성**: 같은 상황에 다른 정답 포맷이 섞이면 학습이 흔들림
@@ -116,23 +91,17 @@ paginate: true
 > 실습: 노트북 1(`1. VLM 학습 데이터 준비.ipynb`)에서 위 포맷과 체크리스트를 직접 코드로 확인
 
 ---
-
 # 3. 학습 목적: Instruction Tuning
-- 개념과 목적
-- VLM 구조에서 무엇을 학습시키는가
-- 학습 대상과 방식 조합
 
 ---
-
 ## 개념과 목적
-- 사전학습(pretraining)된 VLM에 **"지시를 따르는 방식"**을 가르치는 후속 학습 단계
+- 사전학습(pretraining)된 VLM에 **"지시를 따르는 방식"** 을 가르치는 후속 학습 단계
 - 목표: 새로운 지식 주입이 아니라, **원하는 형식·태도로 답하도록 정렬(align)**
 - Instruction Tuning은 **학습 목적/데이터 방식**이고, LoRA/QLoRA는 이를 **적은 자원으로 수행하는 학습 방식**
 - Full fine-tuning(전체 파라미터 학습)은 VLM 규모에서는 비용·메모리 부담이 매우 큼
 
 ---
-
-## VLM 구조에서 무엇을 학습시키는가
+## [VLM 구조에서 무엇을 학습시키는가](https://www.nvidia.com/en-eu/glossary/vision-language-models/)
 
 VLM은 보통 **Vision Encoder + Projector(연결부) + LLM** 3부분으로 구성
 
@@ -143,84 +112,44 @@ VLM은 보통 **Vision Encoder + Projector(연결부) + LLM** 3부분으로 구�
 | LLM(언어모델) | 텍스트 생성 | 전체 또는 일부(LoRA)만 학습 |
 
 ---
-
-## 학습 대상과 방식 조합
-
-| 설계 | 대상 | 방식 | 비용 | 주 용도 |
-|---|---|---|---|---|
-| Full Fine-tuning | 전체 | 전체 가중치 | 매우 높음 | 대규모 전환 |
-| Projector + LLM | Projector + LLM | 전체/부분 업데이트 | 높음 | 형식·스타일 큰 변경 |
-| Projector only | Projector | 연결부만 업데이트 | 낮음 | 매핑 보정 |
-| LoRA/QLoRA 기반 | LLM 일부(+Projector) | 저랭크 어댑터 | 매우 낮음 | 단일 GPU 특화 |
-
-> 실습에서는 RunPod의 단일 GPU 인스턴스 기준이므로, **LoRA/QLoRA**가 현실적인 기본 선택지
-
-> 실습: 노트북 2(`2. QLoRA Fine-tuning.ipynb`)에서 QLoRA로 실제 학습을 진행
+![alt text](./img/image-3.png)
 
 ---
+## 단계별 요약
+> 이 세 단계를 거치면 단순히 이미지를 설명하는 모델이 아니라, 이미지를 보고 질문에 답하고 추론까지 수행하는 VLM이 완성됩니다.
 
+| 단계                                       | 학습 대상               | 입력 데이터                                  | 목적                             |
+| ---------------------------------------- | ------------------- | --------------------------------------- | ------------------------------ |
+| **Stage 1** Projector Initialization     | **Projector만**      | Image-Caption Pair                      | 이미지 특징을 LLM 임베딩 공간으로 변환        |
+| **Stage 2** Visual-Language Pre-training | **Projector + LLM** | Image-Text Pair, Interleaved Image-Text | 이미지와 텍스트를 함께 이해하는 멀티모달 능력 학습   |
+| **Stage 3** Visual Instruction Tuning    | **Projector + LLM** | Image + Instruction + Answer            | 사용자의 지시를 이해하고 자연스럽게 답변하는 능력 학습 |
+
+---
 # 4. 학습 방식: LoRA / QLoRA
-- Full Fine-tuning의 한계
-- LoRA 원리
-- QLoRA: 양자화 + LoRA
-- GPU 자원과 학습 비용
 
 ---
-
-## Full Fine-tuning의 한계
-- VLM은 파라미터 수가 수십억 개 → 전체를 학습하면 **가중치, 그래디언트, 옵티마이저 상태**를 모두 GPU 메모리에 올려야 함
-- 예: 7B 모델 full fine-tuning은 최소 수십 GB VRAM 필요 → 개인/소규모 팀에는 부담
-- 대부분의 실전 fine-tuning은 **일부 파라미터만 학습**하는 PEFT(Parameter-Efficient Fine-Tuning) 방식을 사용
+![w:1000](./img/image.png)
 
 ---
-
-## LoRA(Low-Rank Adaptation) 원리
-- 기존 가중치 행렬 `W`는 그대로 두고(freeze), 옆에 **작은 저랭크 행렬 A, B**를 추가로 학습
-- 학습·저장해야 할 파라미터 수가 원본 대비 수백 분의 1 수준으로 감소
-
-```
-h = Wx + (B·A)x
-```
-- `W`: 원본 가중치 (동결)
-- `A, B`: 저랭크(rank r) 행렬 — 이 부분만 학습 (r은 보통 4~64)
-- 학습 후 `B·A`만 저장하면 되므로 **결과물(체크포인트)도 매우 작음** (수십~수백 MB)
+| 색상     | 의미                            | Full FT       | LoRA                          | QLoRA                          |
+| ------ | ----------------------------- | ------------- | ----------------------------- | ------------------------------ |
+| 🔵 | Parameter Update(실제 가중치 업데이트) | Base Model 전체 | Adapter만                      | Adapter만                       |
+| 🟢 | Gradient Flow(역전파)            | 전체            | Base Model을 통과하여 Adapter까지 전달 | Base Model을 통과하여 Adapter까지 전달  |
+| 🩷 | Paging Flow                   | 없음            | 없음                            | GPU ↔ CPU 간 Optimizer State 이동 |
 
 ---
-
-## QLoRA: 양자화 + LoRA
-- LoRA만으로도 학습 파라미터는 줄지만, **원본 모델 자체는 여전히 GPU에 올라가 있어야** 함
-- QLoRA는 원본 가중치를 **4bit로 양자화**해 메모리에 올리고, 그 위에 LoRA(A, B)만 원래 정밀도로 학습
-
-| 항목 | LoRA | QLoRA |
-|---|---|---|
-| 원본 가중치 정밀도 | FP16/BF16 | 4bit 양자화 |
-| VRAM 사용량 | 중간 | 낮음 |
-| 학습 속도 | 빠름 | 양자화 연산으로 약간 느려짐 |
-| 적합한 상황 | GPU 메모리 여유 있음 | 단일 저사양 GPU로 큰 모델 학습 |
-
-> "더 큰 모델을 더 적은 GPU로" 학습 가능하게 하는 것이 QLoRA의 핵심 가치
+| 항목              | Full FT | LoRA       | QLoRA                            |
+| --------------- | ---------------- | ---------- | -------------------------------- |
+| Base Model 학습   | ✅                | ❌ | ❌                        |
+| Adapter 사용      | ❌                | ✅          | ✅                                |
+| Base Model 정밀도  | FP16/BF16        | FP16/BF16  | **4bit(NF4)**                    |
+| Optimizer State | GPU              | GPU        | GPU + CPU Paging                 |
+| GPU 메모리         | 매우 큼             | 작음         | 가장 작음                            |
+| 학습 속도           | 느림               | 빠름         | 빠름                               |
+| 대표 사용 환경        | 대규모 GPU 서버       | 일반 GPU     | 단일 GPU(24GB~48GB)에서도 대형 모델 학습 가능 |
 
 ---
-
-## GPU 자원과 학습 비용 (RunPod 기준)
-
-| 모델 규모 | 권장 GPU(VRAM) | 방식 |
-|---|---|---|
-| ~2B급 VLM | 16GB급(예: T4 등) | LoRA |
-| ~7B급 VLM | 24GB급(예: L4, RTX 4090 등) | QLoRA 권장 |
-| 7B 초과 | 40GB급 이상 또는 다중 GPU | QLoRA + 자원 확장 |
-
-- RunPod은 **시간 단위 과금**이므로, 학습 전에 데이터/코드/설정을 로컬에서 충분히 검증 후 GPU 인스턴스를 켜는 것이 비용 절감의 핵심
-- 학습이 끝나면 **LoRA 가중치만 저장**하고 인스턴스는 즉시 종료
-
----
-
 # 5. 평가: Fine-tuning 결과 확인
-- Loss만으로는 부족한 이유
-- 평가셋 구성 원칙
-- 정량 평가 vs 정성 평가
-- Fine-tuning 전후 비교
-- 과적합·회귀(Regression) 체크
 
 ---
 
@@ -252,7 +181,6 @@ h = Wx + (B·A)x
 | 방법 | 정확도·포맷 준수율 등 수치로 집계 | 사람이 답변을 직접 읽고 판단 |
 | 장점 | 빠르고 반복 가능, 자동화 가능 | 수치로 못 잡는 미묘한 오류 포착 |
 | 단점 | 채점 기준이 단순하면 실제 품질과 괴리 가능 | 느리고 평가자마다 기준이 다를 수 있음 |
-| 실습 예 | 노트북 3의 `judge_answer` 키워드 매칭 | 정답과 답변을 나란히 놓고 직접 검수 |
 
 > 정량 평가로 큰 흐름을 빠르게 확인하고, 애매한 사례는 정성 평가로 보완하는 것이 일반적
 
@@ -260,7 +188,6 @@ h = Wx + (B·A)x
 
 ## Fine-tuning 전후 비교
 - 같은 평가셋에 **base 모델**과 **fine-tuned 모델**을 동일한 프롬프트로 돌려 결과를 나란히 비교
-- 노트북 3(`Fine-tuning 전후 비교 평가.ipynb`)에서 이 방식을 그대로 구현 — base vs QLoRA 모델의 정확도를 val셋 기준으로 비교
 
 ```text
 base 모델 정확도:  OO%
@@ -281,9 +208,6 @@ QLoRA 모델 정확도: OO%
 ---
 
 # 6. 경량 적응 방법: Prompt Tuning / VERA
-- Prompt Tuning 개념
-- VERA: Verbalized Learning 사례
-- Prompt Tuning vs LoRA
 
 ---
 
@@ -299,21 +223,32 @@ QLoRA 모델 정확도: OO%
 | 필요 자원 | 없음 | 소량의 학습 데이터·연산 |
 
 ---
-
-## VERA: Verbalized Learning 사례
-
-[VERA (Explainable Video Anomaly Detection via Verbalized Learning of VLMs)](https://smcho1201.tistory.com/146)
-
-- 기존 방식: 이상행동 탐지 규칙/기준을 사람이 프롬프트로 직접 서술
-- VERA의 아이디어: **"좋은 판단 기준 자체"를 학습으로 도출**하고, 그 결과를 사람이 읽을 수 있는 자연어 규칙(guideline)으로 정리
-- 학습된 규칙 문장을 프롬프트에 넣어 사용 → soft prompt와 달리 **결과물이 여전히 해석 가능한 텍스트**
-
-> VERA는 soft prompt 학습이라기보다, **좋은 판단 기준을 언어화해서 추출하고 프롬프트에 활용하는 접근** — 4강의 프레임 기반 이상행동 탐지 실습과 이어지는 문제의식
-
-> 실습: 노트북 4(`4. VERA 판단 기준 학습.ipynb`)에서 판단 기준을 자연어로 반복 개선하는 과정을 직접 구현
+![alt text](./img/image-1.png)
 
 ---
+## [VERA (Explainable Video Anomaly Detection via Verbalized Learning of VLMs)](https://smcho1201.tistory.com/146)
 
+- 기존 방법 1: VLM이 설명하고 LLM이 추론한다. (LLM 추가 비용 발생)
+- 기존 방법 2: VLM 자체를 Fine-tuning한다. (프레임 단위 라벨링 필요)
+- VERA: VLM은 그대로(Frozen) 두고, 학습 가능한 Guiding Question만 추가하여 VLM이 **이상행동** 을 더 잘 설명하고 추론하도록 유도한다.
+
+> VERA의 가장 중요한 아이디어는 "모델을 학습시키는 것이 아니라, 모델에게 던질 질문(Prompt)을 학습시킨다"는 점입니다. 
+
+---
+![alt text](./img/image-2.png)
+
+---
+- `Guiding Questions`: Frozen VLM의 가중치를 변경하지 않고, VLM이 **이상행동** 에 집중하여 설명하고 추론하도록 유도하는 학습 가능한 프롬프트(Soft Prompt)
+- `Coarse Label`: 세부 위치나 시점은 알려주지 않고, 전체 데이터에 대해서만 붙여진 라벨
+- `Frame-level Annotation`: 영상의 각 프레임(Frame) 또는 매우 짧은 시간 구간마다 정답(Label)을 붙이는 작업
+
+| 방법                  | VLM         | 추가 모델                     | 추가 데이터                    | 문제점         |
+| ------------------- | ----------- | ------------------------- | ------------------------- | ----------- |
+| Existing Pipeline 1 | Freeze      | LLM 필요                    | Coarse Label              | LLM 비용 증가   |
+| Existing Pipeline 2 | Fine-tuning | 없음                        | Frame-level Annotation 필요 | 데이터 구축 비용 큼 |
+| **VERA**            | **Freeze**  | **Guiding Questions만 학습** | **Coarse Label만 사용**      | 비용이 가장 적음   |
+
+---
 ## Prompt Tuning vs LoRA
 
 | 구분 | Prompt Tuning | LoRA |
@@ -324,25 +259,22 @@ QLoRA 모델 정확도: OO%
 | 적합한 상황 | 페르소나·톤 고정, 경량 개인화 | 도메인 지식/패턴 자체를 바꿔야 할 때 |
 
 ---
-
 # 7. 학습 대상 확장: Vision Adapter
-- Vision Adapter 개념
-- 적용 사례
+- Vision Adapter는 표준화된 하나의 모델 이름이 아니라 설계 방식(Design Pattern)을 가리키는 표현입니다.
+
+> 따라서 Vision Adapter는 **Vision Encoder와 LLM을 연결하는 경량 연결 모듈을 학습하는 접근 방식** 입니다.
 
 ---
 
-## Vision Adapter 개념
-- Vision Encoder와 LLM 사이의 **Projector(연결부)를 확장·교체**하는 방식
-- Vision Encoder, LLM 본체는 그대로 두고 **어댑터 모듈만 추가로 학습** → LoRA보다도 구조가 단순한 경량화 전략
-- 새로운 이미지 도메인(예: 의료 영상, 특수 센서 이미지)에 기존 LLM의 언어 능력을 연결할 때 사용
-
-> 이 구조를 대중화한 대표 사례가 **LLaVA**: Vision Encoder(CLIP) + Projector(MLP) + LLM(Vicuna)를 연결하고, 먼저 Projector만 학습해 이미지-언어를 정렬한 뒤 LLM과 함께 instruction tuning — 실습에서 쓴 Qwen3-VL의 `visual.merger`도 이름만 다를 뿐 같은 역할
+## Vision Adapter
+- Vision Encoder와 LLM 사이를 연결하는 경량 모듈(Projector/Adapter)만 학습하는 방식
+- Vision Encoder와 LLM의 사전학습된 가중치는 최대한 유지하고, 이미지-언어 정렬(Image-Language Alignment)을 위한 연결부만 업데이트
+- 적은 학습 데이터와 GPU 메모리로 새로운 이미지 도메인(의료, 위성, 산업 검사 등)에 빠르게 적응 가능
+- 대표 사례: [LLaVA](https://www.themoonlight.io/en/review/when-llava-meets-objects-token-composition-for-vision-language-models)
+  - Stage 1: CLIP(Freeze) + Vicuna(Freeze), Projector만 학습
+  - Stage 2: CLIP은 Freeze를 유지하고, Projector와 LLM을 함께 Visual Instruction Tuning
 
 ---
-
-## 적용 사례
-- **도메인 전환**: 일반 이미지로 학습된 VLM을 의료 영상·위성 사진 등 새로운 시각 도메인에 연결
-- **경량 개인화**: Vision Encoder·LLM은 그대로 두고 Projector만 재학습해 빠르게 특정 서비스에 맞춤
-- LoRA와 함께 쓰는 경우도 많음 — Projector는 Vision Adapter로, LLM 쪽은 LoRA로 나눠 학습
+![alt text](./img/image-4.png)
 
 
