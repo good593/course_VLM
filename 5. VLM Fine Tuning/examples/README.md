@@ -35,6 +35,13 @@ cp .env.example .env
 학생들이 동일한 환경(파이썬/CUDA/패키지 버전)에서 실습할 수 있도록 Dockerfile을 제공합니다.
 RunPod Pod의 컨테이너 이미지로 그대로 사용할 수 있습니다.
 
+RunPod은 Pod 시작 시 **`/workspace`에 영구 네트워크 볼륨을 마운트**하며, 이 마운트가
+이미지 빌드 시점에 그 경로에 넣어둔 내용을 덮어씁니다. 그래서 이 Dockerfile은 코드와
+venv를 `/workspace`가 아닌 `/app/examples`에 빌드해두고, 컨테이너가 시작될 때
+`start.sh`(entrypoint)가 `/workspace/examples`로 복사한 뒤 Jupyter Lab을 띄웁니다.
+이미 존재하는 파일(학생이 수정한 노트북 등)은 덮어쓰지 않으므로, Pod을 재시작해도
+작업 내용이 보존됩니다.
+
 ```bash
 # 이미지 빌드 (로컬 또는 RunPod 빌드 파이프라인에서)
 docker build -t vlm-finetuning-lab .
