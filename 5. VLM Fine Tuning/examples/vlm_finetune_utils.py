@@ -20,6 +20,7 @@ from pathlib import Path
 
 import ollama
 from PIL import Image
+from tqdm.auto import tqdm
 
 DATASET_ID = "Tutoruslabs/ChartQA_KOR"
 
@@ -47,7 +48,7 @@ def _write_split(data, split_dir: Path) -> None:
     img_dir.mkdir(parents=True, exist_ok=True)
 
     records = []
-    for ex in data:
+    for ex in tqdm(data, desc=f"{split_dir.name} 저장 중"):
         question, answer = ex["question"], ex["answer"]
         if not isinstance(question, str) or not question.strip():
             continue
@@ -112,12 +113,21 @@ def push_dataset_to_hub(root: str, repo_id: str, private: bool = True, token: st
 
 
 def download_dataset_from_hub(root: str, repo_id: str, token: str | None = None) -> None:
-    """`push_dataset_to_hub()`로 업로드된 데이터셋(train/val split)을 내려받아 로컬에 저장."""
+    """`push_dataset_to_hub()`로 업로드된 데이터셋(train/val split)을 내려받아 로컬에 저장.
+
+    split별로 `annotations.jsonl`이 이미 있으면 (허브 재다운로드 + 로컬 이미지 재인코딩을
+    건너뛰고) 그대로 둡니다 — 매번 실행할 때마다 처음부터 다시 쓰는 걸 방지.
+    """
+    root_path = Path(root)
+    splits_to_fetch = [s for s in ["train", "val"] if not (root_path / s / "annotations.jsonl").exists()]
+    if not splits_to_fetch:
+        print(f"'{root_path}'에 이미 다운로드되어 있어 건너뜁니다.")
+        return
+
     from datasets import load_dataset
 
     ds = load_dataset(repo_id, token=token)
-    root_path = Path(root)
-    for split_name in ["train", "val"]:
+    for split_name in splits_to_fetch:
         _write_split(ds[split_name], root_path / split_name)
 
 

@@ -10,6 +10,7 @@ dependencies = [
     "datasets>=3.2.0",
     "huggingface-hub>=0.26.0",
     "ipykernel>=7.3.0",
+    "ipywidgets>=8.1.0",
     "python-dotenv>=1.0.0",
     "jupyterlab>=4.6.2",
     "matplotlib>=3.10.0",
@@ -17,18 +18,22 @@ dependencies = [
     "peft>=0.14.0",
     "pillow>=12.3.0",
     "qwen-vl-utils>=0.0.14",
-    "torch>=2.5.0",
-    "torchvision>=0.20.0",
+    "tqdm>=4.66.0",
+    "torch>=2.7.0",
+    "torchvision>=0.22.0",
     "transformers>=4.57.0",
     "trl>=0.13.0",
     "koreanize-matplotlib>=0.1.1",
 ]
 
+# cu124 빌드는 NVIDIA Blackwell GPU(RTX 50 시리즈, RTX PRO Blackwell 등, sm_120)용
+# 커널이 없어 "no kernel image is available for execution on the device" 에러가 남.
+# cu128부터 Blackwell(sm_120) 커널이 포함되어 있어 cu128 인덱스로 전환.
 [tool.uv.sources]
-torch = { index = "pytorch-cu124" }
-torchvision = { index = "pytorch-cu124" }
+torch = { index = "pytorch-cu128" }
+torchvision = { index = "pytorch-cu128" }
 
 [[tool.uv.index]]
-name = "pytorch-cu124"
-url = "https://download.pytorch.org/whl/cu124"
+name = "pytorch-cu128"
+url = "https://download.pytorch.org/whl/cu128"
 explicit = true
