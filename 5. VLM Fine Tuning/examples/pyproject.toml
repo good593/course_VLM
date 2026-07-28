@@ -24,6 +24,8 @@ dependencies = [
     "transformers>=4.57.0",
     "trl>=0.13.0",
     "koreanize-matplotlib>=0.1.1",
+    "jupyter-archive>=3.4.0",
+    "notebook>=7.6.1",
 ]
 
 # cu124 빌드는 NVIDIA Blackwell GPU(RTX 50 시리즈, RTX PRO Blackwell 등, sm_120)용

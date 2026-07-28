@@ -1296,6 +1296,18 @@ wheels = [
 ]
 
 [[package]]
+name = "jupyter-archive"
+version = "3.4.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "jupyter-server" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/6e/8d/2ab96674293cdb333dc90fa9b7a2f4787b3157006624698b44e09e33f3fd/jupyter_archive-3.4.0.tar.gz", hash = "sha256:9bf0170e0b45ac83fc46cbf1abc60f40ced5aacf0b5a1dae465eb3bdabaf17e9", size = 374362, upload-time = "2023-08-15T15:28:35.257Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/73/67/deca91f5987ffdfce3898aa3a9fe4d72d3dd8650052d25a3de86a7c19d50/jupyter_archive-3.4.0-py3-none-any.whl", hash = "sha256:ac8562c20971c741a2dc9c5c160a0b5d27a54700db977906a21549fd2e29109b", size = 28046, upload-time = "2023-08-15T15:28:33.463Z" },
+]
+
+[[package]]
 name = "jupyter-builder"
 version = "1.1.1"
 source = { registry = "https://pypi.org/simple" }
@@ -1998,6 +2010,23 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/6a/51/63fe664f3908c97be9d2e4f1158eb633317598cfa6e1fc14af5383f17512/networkx-3.6.1.tar.gz", hash = "sha256:26b7c357accc0c8cde558ad486283728b65b6a95d85ee1cd66bafab4c8168509", size = 2517025, upload-time = "2025-12-08T17:02:39.908Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/9e/c9/b2622292ea83fbb4ec318f5b9ab867d0a28ab43c5717bb85b0a5f6b3b0a4/networkx-3.6.1-py3-none-any.whl", hash = "sha256:d47fbf302e7d9cbbb9e2555a0d267983d2aa476bac30e90dfbe5669bd57f3762", size = 2068504, upload-time = "2025-12-08T17:02:38.159Z" },
+]
+
+[[package]]
+name = "notebook"
+version = "7.6.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "jupyter-builder" },
+    { name = "jupyter-server" },
+    { name = "jupyterlab" },
+    { name = "jupyterlab-server" },
+    { name = "notebook-shim" },
+    { name = "tornado" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/28/62/34df9b5f6cef6a3e71301cd2f5525fe93a983ae46bd217e7cca27374a037/notebook-7.6.1.tar.gz", hash = "sha256:0b45fd1010668dd4808c40914d957706dbf044a677d28764dc881b74dfcede82", size = 5499443, upload-time = "2026-07-22T12:39:05.432Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/3c/19/003ac39eae3a88b80631f93eb954b61d0f1fc1dce4c84602eb0bf4802466/notebook-7.6.1-py3-none-any.whl", hash = "sha256:6ea1e4c926f0dc490444ddcc335797a3dacda470a805d01031872fb119988ba2", size = 5546368, upload-time = "2026-07-22T12:39:02.287Z" },
 ]
 
 [[package]]
@@ -3768,9 +3797,11 @@ dependencies = [
     { name = "huggingface-hub" },
     { name = "ipykernel" },
     { name = "ipywidgets" },
+    { name = "jupyter-archive" },
     { name = "jupyterlab" },
     { name = "koreanize-matplotlib" },
     { name = "matplotlib" },
+    { name = "notebook" },
     { name = "ollama" },
     { name = "peft" },
     { name = "pillow" },
@@ -3791,9 +3822,11 @@ requires-dist = [
     { name = "huggingface-hub", specifier = ">=0.26.0" },
     { name = "ipykernel", specifier = ">=7.3.0" },
     { name = "ipywidgets", specifier = ">=8.1.0" },
+    { name = "jupyter-archive", specifier = ">=3.4.0" },
     { name = "jupyterlab", specifier = ">=4.6.2" },
     { name = "koreanize-matplotlib", specifier = ">=0.1.1" },
     { name = "matplotlib", specifier = ">=3.10.0" },
+    { name = "notebook", specifier = ">=7.6.1" },
     { name = "ollama", specifier = ">=0.6.2" },
     { name = "peft", specifier = ">=0.14.0" },
     { name = "pillow", specifier = ">=12.3.0" },
