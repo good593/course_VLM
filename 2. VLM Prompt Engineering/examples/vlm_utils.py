@@ -4,7 +4,7 @@ import json
 
 import ollama
 
-DEFAULT_MODEL = "qwen3-vl:4b"
+DEFAULT_MODEL = "qwen3-vl:4b-instruct"
 
 
 def ask(image_path, prompt, model=DEFAULT_MODEL, json_format=False, think=False, **options):
